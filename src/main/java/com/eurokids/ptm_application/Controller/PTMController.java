@@ -4,6 +4,7 @@ import com.eurokids.ptm_application.Dtos.*;
 import com.eurokids.ptm_application.Model.Escalations;
 import com.eurokids.ptm_application.Model.Meetings;
 import com.eurokids.ptm_application.Model.UserInfo;
+import com.eurokids.ptm_application.Service.OpenAISummaryService;
 import com.eurokids.ptm_application.Service.PtmService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -11,6 +12,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import reactor.core.publisher.Mono;
 
 @RestController
 @RequestMapping("/api/ptm")
@@ -19,8 +21,11 @@ public class PTMController {
 
     private final PtmService ptmService;
 
-    public PTMController(PtmService ptmService) {
+    private final OpenAISummaryService summaryService;
+
+    public PTMController(PtmService ptmService, OpenAISummaryService summaryService) {
         this.ptmService = ptmService;
+        this.summaryService = summaryService;
     }
 
     @Operation(summary = "Save user information", description = "Creates a new user (Teacher/Parent).")
@@ -73,5 +78,10 @@ public class PTMController {
     @GetMapping("/meetings/{meetingId}")
     public ResponseEntity<Meetings> getMeetingDetails(@PathVariable String meetingId) {
         return ResponseEntity.ok(ptmService.getMeetingDetails(meetingId));
+    }
+
+    @PostMapping("/summary")
+    public ResponseEntity<String> summarize(@RequestBody String text) {
+        return ResponseEntity.ok(summaryService.getSummary(text));
     }
 }
