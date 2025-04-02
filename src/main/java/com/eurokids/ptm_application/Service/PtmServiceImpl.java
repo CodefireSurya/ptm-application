@@ -24,13 +24,15 @@ public class PtmServiceImpl implements PtmService {
     private final UserInfoRepository userInfoRepository;
     private final MeetingsRepository meetingsRepository;
     private final EscalationsRepository escalationsRepository;
+    private final OpenAISummaryService openAISummaryService;
 
     @Autowired
     public PtmServiceImpl(UserInfoRepository userInfoRepository, MeetingsRepository meetingsRepository,
-                          EscalationsRepository escalationsRepository) {
+                          EscalationsRepository escalationsRepository, OpenAISummaryService openAISummaryService) {
         this.userInfoRepository = userInfoRepository;
         this.meetingsRepository = meetingsRepository;
         this.escalationsRepository = escalationsRepository;
+        this.openAISummaryService = openAISummaryService;
     }
 
     @Override
@@ -119,7 +121,9 @@ public class PtmServiceImpl implements PtmService {
         Meetings meeting = meetingsRepository.findById(transcriptDTO.meetingId())
                 .orElseThrow(() -> new IllegalArgumentException("Meeting not found."));
 
-        meeting.setTranscript(transcriptDTO.transcript());
+        String transcriptSummary=openAISummaryService.getSummary(transcriptDTO.transcript());
+
+        meeting.setTranscript(transcriptSummary);
         meeting.setNotesApproved(false);
 
         meetingsRepository.save(meeting);
